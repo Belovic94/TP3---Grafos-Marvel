@@ -48,7 +48,11 @@ class Grafo(object):
     def __delitem__(self, id):
         '''Elimina el vertice del grafo. Si no existe el identificador en el grafo, lanzara KeyError.
         Borra tambien todas las aristas que salian y entraban al vertice en cuestion.'''
-        raise NotImplementedError()
+        if id not in self.vertices:
+			raise KeyError()
+		for w in self.vertices[id]:
+			self.vertices[w].pop(id, None)
+		self.vertices.pop(id)
 
     def __contains__(self, id):
         ''' Determina si el grafo contiene un vertice con el identificador indicado.'''
