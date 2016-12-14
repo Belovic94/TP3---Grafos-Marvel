@@ -14,6 +14,7 @@ class Grafo(object):
         #{Hulk:{Iron Man: 4, Black Widow: 7}, Spiderman:{Capitan America:4, Ant Man: 1}}
         self.cant_vertices = 0
         self.dirigido = es_dirigido
+        self.cant_aristas = 0
 
 
     def __len__(self):
@@ -36,7 +37,6 @@ class Grafo(object):
             raise KeyError()
         return valor
 
-
     def __setitem__(self, id, valor):
         '''Agrega un nuevo vertice con el par <id, valor> indicado.
         ID debe ser de identificador unico del vertice.
@@ -44,15 +44,15 @@ class Grafo(object):
         if id not in self.vertices:
             self.cant_vertices += 1
         self.vertices[id] = valor
-
     def __delitem__(self, id):
         '''Elimina el vertice del grafo. Si no existe el identificador en el grafo, lanzara KeyError.
         Borra tambien todas las aristas que salian y entraban al vertice en cuestion.'''
         if id not in self.vertices:
-			raise KeyError()
-		for w in self.vertices[id]:
-			self.vertices[w].pop(id, None)
-		self.vertices.pop(id)
+            raise KeyError()
+        self.cant_aristas -= len(self.vertices[id])
+        for w in self.vertices[id]:
+            self.vertices[w].pop(id, None)
+        self.vertices.pop(id)
 
     def __contains__(self, id):
         ''' Determina si el grafo contiene un vertice con el identificador indicado.'''
@@ -68,6 +68,7 @@ class Grafo(object):
         dicc_aux = self.vertices.get(desde, {})
         dicc_aux[hasta] = peso
         self.vertices[desde] = dicc_aux
+        self.cant_aristas += 1
         if not self.dirigido:
             dicc_aux = self.vertices.get(hasta, {})
             dicc_aux[desde] = peso
@@ -75,15 +76,14 @@ class Grafo(object):
 
     def borrar_arista(self, desde, hasta):
         '''Borra una arista que conecta los vertices indicados. Parametros:
-        - desde y hasta: identificadores de vertices dentro del grafo. Si alguno de estos no existe dentro del grafo, lanzara KeyError.
-        En caso de no existir la arista, se lanzara ValueError.'''
-        if desde not in self.vertices or hasta not in self.vetices:
+           - desde y hasta: identificadores de vertices dentro del grafo. Si alguno de estos no existe dentro del grafo, lanzara KeyError.
+          En caso de no existir la arista, se lanzara ValueError.'''
+        if desde not in self.vertices or hasta not in self.vertices:
             raise KeyError()
         dicc_aux = self.vertices.get(desde)
         if not dicc_aux or not dicc_aux.pop(hasta):
             raise ValueError()
-
-
+        self.cant_aristas -= 1
 
     def obtener_peso_arista(self, desde, hasta):
         '''Obtiene el peso de la arista que va desde el vertice 'desde', hasta el vertice 'hasta'. Parametros:
@@ -209,10 +209,11 @@ class Grafo(object):
                     #heap_modificar_prioridad(w, distancia[w])'''
 
     def pesos(self, v, adyacentes):
-        total = 0
+        #print (adyacentes)
         for w in adyacentes:
-            total += self.obtener_peso_arista(v, w)
-        rand = random.uniform(0, total)
+            total = self.obtener_peso_arista(v, w)
+        rand = random.randrange(0, total)
+        #print (rand)
         acum = 0
         for w in adyacentes:
             acum += self.obtener_peso_arista(v, w)
@@ -236,8 +237,12 @@ class Grafo(object):
         for i in range(1, largo):
             adyacentes = self.adyacentes(v)
             if not pesado:
-                v = adyacentes[random.uniform(0, len(adyacentes))]
+                v = adyacentes[random.randrange(0, len(adyacentes))]
             else:
                 v = self.pesos(v, adyacentes)
             recorrido.append(v)
         return recorrido
+        
+    def cantidad_aristas(self):
+         return self.cant_aristas
+
